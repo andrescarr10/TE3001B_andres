@@ -7,8 +7,8 @@
 #include <std_msgs/msg/float32.h>
 
 rcl_subscription_t subscriber_pwm;
-rcl_publisher_t publisher_raw;
-rcl_publisher_t publisher_volt;
+rcl_publisher_t publisher_rawdata;
+rcl_publisher_t publisher_voltage;
 rclc_executor_t executor_10;
 rclc_executor_t executor_100;
 rclc_executor_t executor_pwm;
@@ -17,9 +17,9 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer_10;
 rcl_timer_t timer_100;
-std_msgs__msg__Float32 msg_raw;
-std_msgs__msg__Float32 msg_volt;
 std_msgs__msg__Float32 msg_pwm;
+std_msgs__msg__Float32 msg_voltage;
+std_msgs__msg__Float32 msg_rawdata;
 
 // PIN ESP32
 #define LED_PIN_1 12
@@ -29,9 +29,9 @@ std_msgs__msg__Float32 msg_pwm;
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
-//Variables
-int val_pot = 0;
-float voltage = 0;
+// Variables
+int value_pot = 0;
+float volt = 0;
 int duty_cycle = 0;
 
 void error_loop(){
@@ -45,8 +45,8 @@ void timer_callback_10(rcl_timer_t * timer, int64_t last_call_time)
 {  
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    val_pot = analogRead(POT_PIN);
-    voltage = (float(val_pot)/4095.0)*3.3;
+    value_pot = analogRead(POT_PIN);
+    volt = (float(value_pot)/4095.0)*3.3;
   }
 }
 
@@ -54,10 +54,10 @@ void timer_callback_100(rcl_timer_t * timer, int64_t last_call_time)
 {  
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    RCSOFTCHECK(rcl_publish(&publisher_raw, &msg_raw, NULL));
-    msg_raw.data = val_pot;
-    RCSOFTCHECK(rcl_publish(&publisher_volt, &msg_volt, NULL));
-    msg_volt.data = voltage;
+    RCSOFTCHECK(rcl_publish(&publisher_rawdata, &msg_rawdata, NULL));
+    msg_rawdata.data = value_pot;
+    RCSOFTCHECK(rcl_publish(&publisher_voltage, &msg_voltage, NULL));
+    msg_voltage.data = volt;
   }
 }
 
@@ -94,27 +94,25 @@ void setup() {
     "pwm_duty_cycle"));
 
   RCCHECK(rclc_publisher_init_default(
-    &publisher_raw,
+    &publisher_rawdata,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "raw_pot"));
-  
+
   RCCHECK(rclc_publisher_init_default(
-    &publisher_volt,
+    &publisher_voltage,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "voltage"));
 
   const unsigned int timer_timeout_10 = 10;
-  
   RCCHECK(rclc_timer_init_default(
     &timer_10,
     &support,
     RCL_MS_TO_NS(timer_timeout_10),
     timer_callback_10));
-  
-  const unsigned int timer_timeout_100 = 100;
-  
+
+    const unsigned int timer_timeout_100 = 100;
   RCCHECK(rclc_timer_init_default(
     &timer_100,
     &support,
@@ -127,10 +125,9 @@ void setup() {
   RCCHECK(rclc_executor_add_timer(&executor_10, &timer_10));
   RCCHECK(rclc_executor_add_timer(&executor_100, &timer_100));
   RCCHECK(rclc_executor_add_subscription(&executor_pwm, &subscriber_pwm, &msg_pwm, &subscription_callback, ON_NEW_DATA));
-  
-  msg_raw.data = 0;
-  msg_volt.data = 0;
-  
+
+  msg_rawdata.data = 0;
+  msg_voltage.data = 0;
 }
 
 void loop() {
