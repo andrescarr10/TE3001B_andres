@@ -1,0 +1,6 @@
+signal_generator_node:
+  ros__parameters:
+    type_of_signal: 1
+    amplitude_param: 0.5
+    frequency_param: 2.0
+    offset_param: 1.0
