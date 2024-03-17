@@ -21,6 +21,7 @@ std_msgs__msg__Float32 msg_raw;
 std_msgs__msg__Float32 msg_volt;
 std_msgs__msg__Float32 msg_pwm;
 
+// PIN ESP32
 #define LED_PIN_1 12
 #define LED_PIN_2 13
 #define POT_PIN 15
