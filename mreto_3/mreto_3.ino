@@ -29,6 +29,7 @@ std_msgs__msg__Float32 msg_pwm;
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
+//Variables
 int val_pot = 0;
 float voltage = 0;
 int duty_cycle = 0;
