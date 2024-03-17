@@ -1,20 +1,14 @@
 #include <micro_ros_arduino.h>
-
 #include <stdio.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
-
-//#include <std_msgs/msg/float32.h>
 #include <std_msgs/msg/float32.h>
 
 rcl_subscription_t subscriber_pwm;
 rcl_publisher_t publisher_raw;
 rcl_publisher_t publisher_volt;
-std_msgs__msg__Float32 msg_raw;
-std_msgs__msg__Float32 msg_volt;
-std_msgs__msg__Float32 msg_pwm;
 rclc_executor_t executor_10;
 rclc_executor_t executor_100;
 rclc_executor_t executor_pwm;
@@ -23,6 +17,9 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer_10;
 rcl_timer_t timer_100;
+std_msgs__msg__Float32 msg_raw;
+std_msgs__msg__Float32 msg_volt;
+std_msgs__msg__Float32 msg_pwm;
 
 #define LED_PIN_1 12
 #define LED_PIN_2 13
@@ -48,8 +45,6 @@ void timer_callback_10(rcl_timer_t * timer, int64_t last_call_time)
   if (timer != NULL) {
     val_pot = analogRead(POT_PIN);
     voltage = (float(val_pot)/4095.0)*3.3;
-  //  RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
-    //msg.data++;
   }
 }
 
@@ -100,14 +95,14 @@ void setup() {
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "pwm_duty_cycle"));
 
-  // create publisher raw
+  // create publisher raw pot
   RCCHECK(rclc_publisher_init_default(
     &publisher_raw,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "raw_pot"));
 
-  // create publisher volt
+  // create publisher voltage
   RCCHECK(rclc_publisher_init_default(
     &publisher_volt,
     &node,
