@@ -82,60 +82,53 @@ void setup() {
 
   allocator = rcl_get_default_allocator();
 
-  //create init_options
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
-
-  // create node
   RCCHECK(rclc_node_init_default(&node, "micro_ros_esp32_node", "", &support));
 
-  // create subscriber
   RCCHECK(rclc_subscription_init_default(
     &subscriber_pwm,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "pwm_duty_cycle"));
 
-  // create publisher raw pot
   RCCHECK(rclc_publisher_init_default(
     &publisher_raw,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "raw_pot"));
-
-  // create publisher voltage
+  
   RCCHECK(rclc_publisher_init_default(
     &publisher_volt,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
     "voltage"));
 
-  // create timer 10 ms
   const unsigned int timer_timeout_10 = 10;
+  
   RCCHECK(rclc_timer_init_default(
     &timer_10,
     &support,
     RCL_MS_TO_NS(timer_timeout_10),
     timer_callback_10));
-
-  // create timer 100 ms
-    const unsigned int timer_timeout_100 = 100;
+  
+  const unsigned int timer_timeout_100 = 100;
+  
   RCCHECK(rclc_timer_init_default(
     &timer_100,
     &support,
     RCL_MS_TO_NS(timer_timeout_100),
     timer_callback_100));
 
-  // create executor
   RCCHECK(rclc_executor_init(&executor_pwm, &support.context, 1, &allocator));
   RCCHECK(rclc_executor_init(&executor_10, &support.context, 1, &allocator));
   RCCHECK(rclc_executor_init(&executor_100, &support.context, 1, &allocator));
-
   RCCHECK(rclc_executor_add_timer(&executor_10, &timer_10));
   RCCHECK(rclc_executor_add_timer(&executor_100, &timer_100));
   RCCHECK(rclc_executor_add_subscription(&executor_pwm, &subscriber_pwm, &msg_pwm, &subscription_callback, ON_NEW_DATA));
-
+  
   msg_raw.data = 0;
   msg_volt.data = 0;
+  
 }
 
 void loop() {
